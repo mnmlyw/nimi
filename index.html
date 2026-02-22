@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>nimi</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#F5F0E8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151311" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #F5F0E8;
+      --bg-card: #FDFBF7;
+      --text: #2C2825;
+      --text-dim: #9A9088;
+      --accent: #C4653A;
+      --accent-soft: rgba(196, 101, 58, 0.09);
+      --border: rgba(44, 40, 37, 0.07);
+      --shadow:
+        0 1px 2px rgba(44, 40, 37, 0.04),
+        0 4px 16px rgba(44, 40, 37, 0.05),
+        0 12px 40px rgba(44, 40, 37, 0.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #151311;
+        --bg-card: #1F1D1A;
+        --text: #E8E0D4;
+        --text-dim: #706860;
+        --accent: #D4A76A;
+        --accent-soft: rgba(212, 167, 106, 0.1);
+        --border: rgba(255, 255, 255, 0.05);
+        --shadow:
+          0 1px 2px rgba(0, 0, 0, 0.2),
+          0 4px 16px rgba(0, 0, 0, 0.15),
+          0 12px 40px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #151311;
+      --bg-card: #1F1D1A;
+      --text: #E8E0D4;
+      --text-dim: #706860;
+      --accent: #D4A76A;
+      --accent-soft: rgba(212, 167, 106, 0.1);
+      --border: rgba(255, 255, 255, 0.05);
+      --shadow:
+        0 1px 2px rgba(0, 0, 0, 0.2),
+        0 4px 16px rgba(0, 0, 0, 0.15),
+        0 12px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    html, body {
+      height: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.4s ease, color 0.4s ease;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 24px 24px env(safe-area-inset-bottom, 20px);
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      letter-spacing: 0.01em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .counter {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+    }
+
+    .theme-toggle {
+      appearance: none;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.3s;
+      border-radius: 50%;
+    }
+
+    .theme-toggle:hover { color: var(--text); }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      min-height: 0;
+    }
+
+    /* ── Card ── */
+    .card-container {
+      width: 100%;
+      max-width: 360px;
+      height: 55vh;
+      max-height: 440px;
+      min-height: 280px;
+      perspective: 1200px;
+      cursor: pointer;
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .card-container.out {
+      opacity: 0;
+      transform: scale(0.97);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 32px 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* subtle paper grain */
+    .card-face::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    .category {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    .word {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      font-style: italic;
+      font-size: clamp(2.8rem, 9vw, 4.2rem);
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      transition: color 0.4s ease;
+    }
+
+    .meaning {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      font-size: clamp(1rem, 3.5vw, 1.25rem);
+      line-height: 1.65;
+      color: var(--text);
+      text-align: center;
+      max-width: 280px;
+      transition: color 0.4s ease;
+    }
+
+    .back-word {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 400;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text-dim);
+      margin-top: -8px;
+    }
+
+    .divider {
+      width: 32px;
+      height: 1px;
+      background: var(--border);
+      margin: -4px 0;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      opacity: 0.7;
+      position: absolute;
+      bottom: 24px;
+    }
+
+    /* ── Next Button ── */
+    .next-btn {
+      appearance: none;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--accent);
+      padding: 12px 28px;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .next-btn:hover { opacity: 0.7; }
+    .next-btn:active { transform: scale(0.97); }
+
+    .next-btn .arrow {
+      display: inline-block;
+      transition: transform 0.2s ease;
+      font-size: 1rem;
+    }
+
+    .next-btn:hover .arrow { transform: translateX(3px); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding-top: 12px;
+      flex-shrink: 0;
+    }
+
+    .shortcuts {
+      font-size: 0.68rem;
+      font-weight: 400;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      opacity: 0.5;
+    }
+
+    /* hide keyboard shortcuts on touch devices */
+    @media (hover: none) {
+      .shortcuts { display: none; }
+      footer { padding-top: 0; }
+    }
+
+    /* ── Initial load ── */
+    .app {
+      animation: fadeIn 0.6s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+    }
+
+    /* ── Focus styles ── */
+    .next-btn:focus-visible,
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .card-container:focus-visible .card-face {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <span class="title">nimi</span>
+      <div class="header-right">
+        <span class="counter" id="counter"></span>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M9 2a7 7 0 0 1 0 14z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <div class="card-container" id="card-container" tabindex="0" role="button" aria-label="Flashcard, tap to flip">
+        <div class="card" id="card">
+          <div class="card-face card-front">
+            <span class="category" id="cat-front"></span>
+            <span class="word" id="word"></span>
+            <span class="hint">tap to reveal</span>
+          </div>
+          <div class="card-face card-back">
+            <span class="category" id="cat-back"></span>
+            <span class="back-word" id="back-word"></span>
+            <div class="divider"></div>
+            <p class="meaning" id="meaning"></p>
+            <span class="hint">tap to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="next-btn" id="next-btn">
+        next word <span class="arrow">&rarr;</span>
+      </button>
+    </main>
+
+    <footer>
+      <span class="shortcuts">space flip &middot; &rarr; next</span>
+    </footer>
+  </div>
+
+  <script>
+    // ── Toki Pona vocabulary (120 pu words) ──
+    const W = [
+      { w:"a", t:"particle", m:"emphasis, emotion, confirmation" },
+      { w:"akesi", t:"noun", m:"non-cute animal; reptile, amphibian" },
+      { w:"ala", t:"adjective", m:"no, not, zero, nothing" },
+      { w:"alasa", t:"verb", m:"to hunt, to forage, to seek" },
+      { w:"ale", t:"adjective", m:"all, every, entirety, life, universe; 100" },
+      { w:"anpa", t:"adjective", m:"bottom, lower part, humble, bowing down" },
+      { w:"ante", t:"adjective", m:"different, altered, changed, other" },
+      { w:"anu", t:"particle", m:"or (conjunction)" },
+      { w:"awen", t:"adjective", m:"enduring, kept, safe; to continue, to stay" },
+      { w:"e", t:"particle", m:"marks the direct object" },
+      { w:"en", t:"particle", m:"and (joins multiple subjects)" },
+      { w:"esun", t:"noun", m:"market, shop, fair, business transaction" },
+      { w:"ijo", t:"noun", m:"thing, object, matter, phenomenon" },
+      { w:"ike", t:"adjective", m:"bad, negative, wrong, evil, complex" },
+      { w:"ilo", t:"noun", m:"tool, instrument, device, machine" },
+      { w:"insa", t:"noun", m:"inside, center, between, internal organ" },
+      { w:"jaki", t:"adjective", m:"disgusting, toxic, unclean, unsanitary" },
+      { w:"jan", t:"noun", m:"human being, person, somebody" },
+      { w:"jelo", t:"adjective", m:"yellow, yellowish, golden" },
+      { w:"jo", t:"verb", m:"to have, to carry, to contain, to hold" },
+      { w:"kala", t:"noun", m:"fish, marine animal, sea creature" },
+      { w:"kalama", t:"verb", m:"to produce a sound; sound, noise" },
+      { w:"kama", t:"pre-verb", m:"arriving, coming; future; to become, to manage to" },
+      { w:"kasi", t:"noun", m:"plant, vegetation, herb, leaf" },
+      { w:"ken", t:"pre-verb", m:"can, may, possible; ability, permission" },
+      { w:"kepeken", t:"preposition", m:"to use, by means of, with (using)" },
+      { w:"kili", t:"noun", m:"fruit, vegetable, mushroom" },
+      { w:"kiwen", t:"noun", m:"hard object; metal, rock, stone" },
+      { w:"ko", t:"noun", m:"semi-solid; clay, paste, powder, dough" },
+      { w:"kon", t:"noun", m:"air, breath, spirit, essence, hidden reality" },
+      { w:"kule", t:"adjective", m:"color, colorful, painted, pigmented" },
+      { w:"kulupu", t:"noun", m:"community, group, company, society, nation" },
+      { w:"kute", t:"verb", m:"to listen, to hear, to pay attention to; ear" },
+      { w:"la", t:"particle", m:"context separator (if, when, given that)" },
+      { w:"lape", t:"adjective", m:"sleeping, resting, dormant" },
+      { w:"laso", t:"adjective", m:"blue, green, cyan" },
+      { w:"lawa", t:"noun", m:"head, mind; to lead, to control, to rule" },
+      { w:"len", t:"noun", m:"cloth, clothing, fabric, cover, layer" },
+      { w:"lete", t:"adjective", m:"cold, cool, uncooked, raw" },
+      { w:"li", t:"particle", m:"marks the predicate (between subject and verb)" },
+      { w:"lili", t:"adjective", m:"little, small, short, young, few" },
+      { w:"linja", t:"noun", m:"long flexible thing; cord, hair, rope, thread" },
+      { w:"lipu", t:"noun", m:"flat object; book, document, paper, website" },
+      { w:"loje", t:"adjective", m:"red, reddish, warm-colored" },
+      { w:"lon", t:"preposition", m:"located at, present, real, true, existing" },
+      { w:"luka", t:"noun", m:"hand, arm, tactile organ; five" },
+      { w:"lukin", t:"verb", m:"to look, to see, to examine, to read; eye" },
+      { w:"lupa", t:"noun", m:"hole, door, orifice, window, opening" },
+      { w:"ma", t:"noun", m:"earth, land, country, territory, outdoors" },
+      { w:"mama", t:"noun", m:"parent, ancestor, creator, caretaker" },
+      { w:"mani", t:"noun", m:"money, cash, savings; large domesticated animal" },
+      { w:"meli", t:"noun", m:"woman, female, feminine person, wife" },
+      { w:"mi", t:"pronoun", m:"I, me, we, us, myself" },
+      { w:"mije", t:"noun", m:"man, male, masculine person, husband" },
+      { w:"moku", t:"verb", m:"to eat, to drink, to consume; food, meal" },
+      { w:"moli", t:"adjective", m:"dead, dying, lethal; death; to kill" },
+      { w:"monsi", t:"noun", m:"back, behind, rear, butt" },
+      { w:"mu", t:"particle", m:"animal noise, meaningless word; moo" },
+      { w:"mun", t:"noun", m:"moon, night sky object, star, celestial body" },
+      { w:"musi", t:"adjective", m:"fun, artistic, entertaining, playful; game" },
+      { w:"mute", t:"adjective", m:"many, several, very, much, more; twenty" },
+      { w:"nanpa", t:"particle", m:"number, -th (ordinal); to count" },
+      { w:"nasa", t:"adjective", m:"unusual, strange, silly, drunk, intoxicated" },
+      { w:"nasin", t:"noun", m:"way, road, path, method, doctrine, custom" },
+      { w:"nena", t:"noun", m:"bump, hill, mountain, nose, protuberance" },
+      { w:"ni", t:"adjective", m:"this, that, these, those" },
+      { w:"nimi", t:"noun", m:"name, word, definition" },
+      { w:"noka", t:"noun", m:"foot, leg, lower body part; bottom" },
+      { w:"o", t:"particle", m:"vocative or imperative (hey! O! please do)" },
+      { w:"olin", t:"verb", m:"to love, to have compassion for; affection" },
+      { w:"ona", t:"pronoun", m:"he, she, it, they, them" },
+      { w:"open", t:"verb", m:"to begin, to start, to open, to turn on" },
+      { w:"pakala", t:"adjective", m:"broken, damaged, harmed; mistake, accident" },
+      { w:"pali", t:"verb", m:"to do, to work on, to make, to build" },
+      { w:"palisa", t:"noun", m:"long hard thing; rod, stick, branch" },
+      { w:"pan", t:"noun", m:"cereal, grain; bread, rice, corn" },
+      { w:"pana", t:"verb", m:"to give, to send, to emit, to provide" },
+      { w:"pi", t:"particle", m:"regroups modifiers (of, belonging to)" },
+      { w:"pilin", t:"noun", m:"heart, feeling, emotion; to feel, to think" },
+      { w:"pimeja", t:"adjective", m:"black, dark, unlit, shaded" },
+      { w:"pini", t:"adjective", m:"finished, ended, past; to stop, to close" },
+      { w:"pipi", t:"noun", m:"bug, insect, spider, small crawling creature" },
+      { w:"poka", t:"noun", m:"hip, side, nearby, vicinity; next to" },
+      { w:"poki", t:"noun", m:"container; bag, bowl, box, cup, drawer" },
+      { w:"pona", t:"adjective", m:"good, positive, useful, friendly, simple" },
+      { w:"pu", t:"adjective", m:"interacting with the official Toki Pona book" },
+      { w:"sama", t:"preposition", m:"same, similar, equal; like, as" },
+      { w:"seli", t:"adjective", m:"fire, heat, cooking element; hot, warm" },
+      { w:"selo", t:"noun", m:"outer form, skin, shell, bark, boundary" },
+      { w:"seme", t:"particle", m:"what? which? (question word)" },
+      { w:"sewi", t:"noun", m:"above, highest part; sacred, divine" },
+      { w:"sijelo", t:"noun", m:"body, physical state, torso" },
+      { w:"sike", t:"noun", m:"round thing; circle, ball, cycle, wheel" },
+      { w:"sin", t:"adjective", m:"new, fresh, additional, extra" },
+      { w:"sina", t:"pronoun", m:"you, your, yourself" },
+      { w:"sinpin", t:"noun", m:"face, front, foremost part, wall" },
+      { w:"sitelen", t:"noun", m:"image, picture, writing, symbol, mark" },
+      { w:"sona", t:"verb", m:"to know, to understand; knowledge, wisdom" },
+      { w:"soweli", t:"noun", m:"animal, especially land mammal" },
+      { w:"suli", t:"adjective", m:"big, tall, long, important, adult" },
+      { w:"suno", t:"noun", m:"sun, light, brightness, glow, shine" },
+      { w:"supa", t:"noun", m:"horizontal surface; table, chair, floor, bed" },
+      { w:"suwi", t:"adjective", m:"sweet, fragrant, cute, innocent, adorable" },
+      { w:"tan", t:"preposition", m:"from, by, because of, since; origin, cause" },
+      { w:"taso", t:"particle", m:"but, however; only, just" },
+      { w:"tawa", t:"preposition", m:"going to, toward, for, moving; to move" },
+      { w:"telo", t:"noun", m:"water, liquid, fluid, beverage, juice" },
+      { w:"tenpo", t:"noun", m:"time, moment, duration, period, occasion" },
+      { w:"toki", t:"verb", m:"to communicate, to speak; language, hello" },
+      { w:"tomo", t:"noun", m:"indoor space; house, room, building, shelter" },
+      { w:"tu", t:"number", m:"two; to divide, to split" },
+      { w:"unpa", t:"verb", m:"to have intimate relations; sexual" },
+      { w:"uta", t:"noun", m:"mouth, lips, oral cavity, jaw" },
+      { w:"utala", t:"verb", m:"to fight, to battle, to struggle; conflict" },
+      { w:"walo", t:"adjective", m:"white, light-colored, pale" },
+      { w:"wan", t:"number", m:"one, unique, united; to unite, to join" },
+      { w:"waso", t:"noun", m:"bird, flying creature, winged animal" },
+      { w:"wawa", t:"adjective", m:"strong, powerful, energetic, intense" },
+      { w:"weka", t:"adjective", m:"absent, away, removed, gone, ignored" },
+      { w:"wile", t:"pre-verb", m:"to want, to need, must, should; desire" }
+    ];
+
+    // ── State ──
+    let queue = [];
+    let current = null;
+    let flipped = false;
+    let seen = new Set(JSON.parse(localStorage.getItem('tp-seen') || '[]'));
+    let busy = false;
+
+    const $ = id => document.getElementById(id);
+
+    // ── Shuffle (Fisher-Yates) ──
+    function shuffle(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function fillQueue() {
+      queue = shuffle([...Array(W.length).keys()]);
+    }
+
+    function advanceWord() {
+      if (queue.length === 0) fillQueue();
+      const idx = queue.pop();
+      current = W[idx];
+      seen.add(current.w);
+      try { localStorage.setItem('tp-seen', JSON.stringify([...seen])); } catch {}
+    }
+
+    function render() {
+      $('word').textContent = current.w;
+      $('cat-front').textContent = current.t;
+      $('cat-back').textContent = current.t;
+      $('back-word').textContent = current.w;
+      $('meaning').textContent = current.m;
+      $('counter').textContent = `${seen.size} / ${W.length}`;
+    }
+
+    // ── Flip ──
+    function flip() {
+      if (busy) return;
+      flipped = !flipped;
+      $('card').classList.toggle('flipped', flipped);
+    }
+
+    // ── Next Word ──
+    function goNext() {
+      if (busy) return;
+      busy = true;
+
+      const container = $('card-container');
+      container.classList.add('out');
+
+      setTimeout(() => {
+        advanceWord();
+        render();
+        flipped = false;
+        $('card').classList.remove('flipped');
+
+        requestAnimationFrame(() => {
+          container.classList.remove('out');
+          setTimeout(() => { busy = false; }, 300);
+        });
+      }, 220);
+    }
+
+    // ── Theme ──
+    function initTheme() {
+      const saved = localStorage.getItem('tp-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    }
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      const current = root.getAttribute('data-theme');
+
+      if (current === 'dark') {
+        root.setAttribute('data-theme', 'light');
+        localStorage.setItem('tp-theme', 'light');
+      } else if (current === 'light') {
+        root.setAttribute('data-theme', 'dark');
+        localStorage.setItem('tp-theme', 'dark');
+      } else {
+        // No override yet — check system preference and toggle opposite
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const next = prefersDark ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        localStorage.setItem('tp-theme', next);
+      }
+    }
+
+    // ── Events ──
+    function init() {
+      initTheme();
+      fillQueue();
+      advanceWord();
+      render();
+
+      $('card-container').addEventListener('click', flip);
+      $('next-btn').addEventListener('click', goNext);
+      $('theme-toggle').addEventListener('click', toggleTheme);
+
+      // Keyboard
+      document.addEventListener('keydown', e => {
+        if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+          e.preventDefault();
+          flip();
+        } else if (e.code === 'ArrowRight' || e.code === 'Enter') {
+          e.preventDefault();
+          goNext();
+        }
+      });
+
+      // Swipe
+      let tx = 0, ty = 0;
+      const card = $('card-container');
+      card.addEventListener('touchstart', e => {
+        tx = e.touches[0].clientX;
+        ty = e.touches[0].clientY;
+      }, { passive: true });
+
+      card.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - tx;
+        const dy = e.changedTouches[0].clientY - ty;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          goNext();
+        }
+      }, { passive: true });
+
+      // Service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
